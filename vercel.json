@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "reset-password/index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/reset-password", "dest": "/reset-password/index.html" }
+  ]
+}
