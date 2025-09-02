@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <noscript>JavaScript is required to continue.</noscript>
+    <script>
+      (function () {
+        try {
+          var current = new URL(window.location.href);
+
+          // Supabase can send tokens in hash (#...) or query (?...)
+          var source = current.hash ? current.hash.slice(1) : current.search.slice(1);
+          var params = new URLSearchParams(source);
+
+          // Optional override: allow ?scheme=exp+new_ai_food_app:// or newaifoodapp://
+          var schemeOverride = params.get('scheme');
+
+          // Decide scheme:
+          // - If scheme=... provided, use it
+          // - If on localhost, assume Expo Go
+          // - Else, assume production scheme for standalone app
+          var scheme =
+            schemeOverride ||
+            (location.hostname === 'localhost' ? 'exp+new_ai_food_app://' : 'newaifoodapp://');
+
+          // Target path in your app. Your linking config maps 'signin'
+          // and App.handleDeepLink() will exchange the code/tokens.
+          var target = scheme + 'signin';
+
+          var code = params.get('code');
+          var access_token = params.get('access_token');
+          var refresh_token = params.get('refresh_token');
+
+          if (code) {
+            target += '?code=' + encodeURIComponent(code);
+          } else if (access_token && refresh_token) {
+            target +=
+              '?access_token=' +
+              encodeURIComponent(access_token) +
+              '&refresh_token=' +
+              encodeURIComponent(refresh_token);
+          }
+
+          // Redirect to your app
+          window.location.replace(target);
+        } catch (e) {
+          // In case of an unexpected error, show a minimal message
+          document.write('Redirect failed. You can close this window and return to the app.');
+          console.error('Bounce error:', e);
+        }
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
