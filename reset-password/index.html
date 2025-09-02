@@ -1,25 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-    <title>Auth Callback</title>
+    <title>Redirecting…</title>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
-      (function () {
-        try {
-          const params = new URLSearchParams(window.location.search);
-          const code = params.get('code');
-          // During dev in Expo Go, you can use exp+ scheme; for dev client/standalone, use your custom scheme.
-          const target = code
-            ? 'newaifoodapp://signin?code=' + encodeURIComponent(code)
-            : 'newaifoodapp://signin';
-          window.location.replace(target);
-        } catch (e) {
-          // Fallback: try anyway
-          window.location.replace('newaifoodapp://signin');
-        }
-      })();
+      // Your app's custom scheme deep link
+      const APP_SCHEME = "newaifoodapp://reset-password";
+
+      // Supabase sends tokens in URL hash (#...). If none, try query (?...)
+      const hash = window.location.hash || "";
+      const query = window.location.search || "";
+      const paramSource = hash ? hash.replace(/^#/, "?") : query;
+
+      // Forward everything to your app (preserves access_token, refresh_token, type=recovery)
+      window.location.replace(APP_SCHEME + paramSource);
     </script>
   </head>
-  <body>Redirecting...</body>
+  <body>Redirecting to app…</body>
 </html>
