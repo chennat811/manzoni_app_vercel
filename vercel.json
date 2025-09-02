@@ -1,6 +1,10 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "public/**/*", "use": "@vercel/static" }
+  ],
   "routes": [
-    { "src": "/reset-password", "dest": "/reset-password/index.html" }
+    { "src": "/reset-password", "dest": "/reset-password/index.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
