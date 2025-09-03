@@ -8,7 +8,7 @@
       (function () {
         // Supabase sends access_token/refresh_token OR code, depending on your flow.
         const params = new URLSearchParams(window.location.search);
-        const scheme = 'newaifoodapp'; // or 'exp+new_ai_food_app' for Expo Go
+        const scheme = 'exp+new_ai_food_app'//'newaifoodapp'; // or 'exp+new_ai_food_app' for Expo Go
         // If you use PKCE for password recovery (PASSWORD_RECOVERY with code):
         const code = params.get('code');
         if (code) {
