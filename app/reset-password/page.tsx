@@ -1,7 +1,7 @@
+// app/reset-password/page.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -9,12 +9,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Same default scheme convention as your /auth/callback route:
 const DEFAULT_SCHEME =
   process.env.NODE_ENV !== "production" ? "exp+new_ai_food_app://" : "newaifoodapp://";
 
 function parseHashParams(hash: string) {
-  // hash comes like "#access_token=...&refresh_token=...&type=recovery"
   const trimmed = hash.startsWith("#") ? hash.slice(1) : hash;
   const params = new URLSearchParams(trimmed);
   return {
@@ -24,24 +22,30 @@ function parseHashParams(hash: string) {
   };
 }
 
-function ResetPasswordForm() {
-  const params = useSearchParams();
+function useLocationParams() {
+  return useMemo(() => {
+    if (typeof window === "undefined") {
+      return { scheme: DEFAULT_SCHEME, access_token: undefined, refresh_token: undefined };
+    }
+    const url = new URL(window.location.href);
+    const scheme = url.searchParams.get("scheme") || DEFAULT_SCHEME;
+    const { access_token, refresh_token } = parseHashParams(window.location.hash || "");
+    return { scheme, access_token, refresh_token };
+  }, [typeof window !== "undefined" && window.location.href]);
+}
+
+export const dynamic = "force-dynamic"; // ensure dynamic rendering
+
+export default function ResetPasswordPage() {
+  const { scheme, access_token, refresh_token } = useLocationParams();
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Allow ?scheme= override for where to send the user back in the app after success
-  const scheme = params.get("scheme") || DEFAULT_SCHEME;
-
-  // Read tokens from the URL hash on the client
-  const { access_token, refresh_token } = useMemo(() => {
-    if (typeof window === "undefined") return { access_token: undefined, refresh_token: undefined };
-    return parseHashParams(window.location.hash || "");
-  }, [typeof window !== "undefined" && window.location.hash]);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
+
     if (!password || password.length < 6) {
       setMessage("Please enter a password with at least 6 characters.");
       return;
@@ -53,21 +57,17 @@ function ResetPasswordForm() {
 
     setSubmitting(true);
 
-    // Set the current session with the reset token(s)
     const { error: sessionError } = await supabase.auth.setSession({
       access_token,
-      refresh_token: refresh_token || access_token, // fallback if refresh_token absent
+      refresh_token: refresh_token || access_token,
     });
-
     if (sessionError) {
       setMessage("Error setting session: " + sessionError.message);
       setSubmitting(false);
       return;
     }
 
-    // Update the password
     const { error } = await supabase.auth.updateUser({ password });
-
     if (error) {
       setMessage("Error: " + error.message);
       setSubmitting(false);
@@ -75,9 +75,7 @@ function ResetPasswordForm() {
     }
 
     setMessage("Password updated successfully! Redirecting to app...");
-    // Optional: brief delay then deep link back to the app sign-in screen
     setTimeout(() => {
-      // You can target a specific route in your app, e.g., "signin"
       window.location.href = `${scheme}signin`;
     }, 800);
   }
@@ -102,8 +100,4 @@ function ResetPasswordForm() {
       {message && <p>{message}</p>}
     </form>
   );
-}
-
-export default function ResetPasswordPage() {
-  return <ResetPasswordForm />;
 }
