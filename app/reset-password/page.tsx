@@ -1,41 +1,15 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense } from "react";
+import ResetPasswordForm from "./ResetPasswordForm";
 
-export default function ResetPasswordForm() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+// ✅ force this page to be client-only (no static pre-render)
+export const dynamic = "force-dynamic";
 
-  const token = searchParams.get("token"); // or "access_token" depending on Supabase link
-
-  useEffect(() => {
-    if (!token) {
-      // No token, maybe redirect or show error
-      router.push("/");
-    }
-  }, [token, router]);
-
+export default function ResetPasswordPage() {
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-4">Reset Password</h1>
-      {token ? (
-        <form>
-          <input
-            type="password"
-            placeholder="New password"
-            className="border p-2 w-full mb-4"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Update Password
-          </button>
-        </form>
-      ) : (
-        <p>Invalid or missing reset token.</p>
-      )}
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
