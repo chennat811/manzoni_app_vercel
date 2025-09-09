@@ -1,21 +1,21 @@
+"use client";
+
 import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 
 export default function ResetPassword() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Your deep link scheme (Expo Go or standalone app)
     const APP_SCHEME = "myapp://reset-password";
 
-    // Supabase sends tokens in the hash (#...) or query
+    // Supabase sometimes sends tokens in the hash (#...), sometimes in query (?)
     const hash = window.location.hash || "";
     const query = window.location.search || "";
     const params = hash ? hash.replace(/^#/, "?") : query;
 
-    // Redirect to app
     window.location.replace(APP_SCHEME + params);
-  }, []);
+  }, [searchParams]);
 
   return <p>Redirecting to app…</p>;
 }
