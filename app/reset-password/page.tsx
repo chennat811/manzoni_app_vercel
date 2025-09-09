@@ -10,26 +10,28 @@ export default function ResetPasswordRedirect() {
     try {
       const url = new URL(window.location.href);
 
-      // Preferred: if you send a precise target from the app (e.g., exp://.../--/reset-password)
-      // via redirectTo ?target=<encoded URL>, we forward to it.
+      // Preferred: forward to the exact runtime deep link if provided by the app
+      // App should send redirectTo like:
+      //   https://manzoni-nutrition.vercel.app/reset-password?target=<encodeURIComponent(Linking.createURL('reset-password'))>
       const target = url.searchParams.get('target');
       if (target) {
-        const params = new URLSearchParams(url.search.replace(/^\?/, ''));
-        params.delete('target');
-        const forwardQuery = params.toString();
+        // Preserve Supabase’s other query params (e.g. ?code=...) and hash (#access_token=...)
+        const allParams = new URLSearchParams(url.search.replace(/^\?/, ''));
+        allParams.delete('target'); // avoid echoing target
+        const forwardQuery = allParams.toString();
         const finalUrl = `${target}${forwardQuery ? `?${forwardQuery}` : ''}${url.hash}`;
         window.location.replace(finalUrl);
         return;
       }
 
-      // Fallback: scheme + fixed path, preserve both query and hash exactly
-      const scheme = url.searchParams.get('scheme') || DEFAULT_SCHEME;
+      // Fallback: use a scheme, but normalize any accidental spaces where '+' might have been decoded
+      const rawScheme = url.searchParams.get('scheme') || DEFAULT_SCHEME;
+      const scheme = decodeURIComponent(rawScheme).replace(/ /g, '+'); // normalize '+' if needed
       const finalUrl = `${scheme}reset-password${url.search}${url.hash}`;
       window.location.replace(finalUrl);
     } catch (e) {
       console.error('Reset password redirect error:', e);
-      document.body.innerHTML =
-        '<p>Link redirect failed. Please reopen the app and try again.</p>';
+      document.body.innerHTML = '<p>Link redirect failed. Please reopen the app and try again.</p>';
     }
   }, []);
 
