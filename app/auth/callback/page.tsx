@@ -10,21 +10,18 @@ const DEFAULT_SCHEME =
 
 export default function AuthCallback() {
   useEffect(() => {
-    // Read everything from the browser, including the hash fragment
     const { search, hash } = window.location;
     const url = new URL(window.location.href);
 
-    // Allow ?scheme= override for dev/testing
+    // Allow ?scheme= override (e.g., scheme=exp+new_ai_food_app://)
     const scheme = url.searchParams.get("scheme") || DEFAULT_SCHEME;
 
-    // Supabase sends type=signup|recovery to indicate flow
+    // Supabase sets type=signup|recovery
     const type = url.searchParams.get("type");
     const targetPath = type === "recovery" ? "reset-password" : "signin";
 
-    // Build deep link preserving both search (?...) and hash (#...)
+    // Preserve both ?… and #… when bouncing back into the app
     const target = `${scheme}${targetPath}${search}${hash}`;
-
-    // Use replace so back button won’t return here
     window.location.replace(target);
   }, []);
 
